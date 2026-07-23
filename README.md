@@ -38,4 +38,4 @@ pip install pandas scikit-learn
 python preprocessing.py
 ```
 
-Run from the repo root (same folder as `preprocessing.py`) — the
+Run from the repo root (same folder as `preprocessing.py`) — the script uses relative paths (`data/...`, `outputs/...`).
