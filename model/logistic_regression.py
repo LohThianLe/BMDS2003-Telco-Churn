@@ -1,3 +1,22 @@
+"""
+model/logistic_regression.py - Task 1: Logistic Regression Baseline Model
+
+Why Logistic Regression as the baseline:
+Logistic Regression is used as the baseline model because it is a simple,
+interpretable linear classifier that provides a clear reference point against
+which the more complex models (Decision Tree/KNN, Random Forest, XGBoost) can
+be evaluated. Its coefficients are directly interpretable as log-odds, which is
+valuable for explaining churn drivers to business stakeholders, and it trains
+quickly even with the one-hot-encoded categorical features produced by
+preprocessing.py.
+
+References (APA 7th):
+- Hosmer, D. W., Lemeshow, S., & Sturdivant, R. X. (2013). Applied logistic
+  regression (3rd ed.). John Wiley & Sons.
+- Ahmad, A. K., Jafar, A., & Aljoumaa, K. (2019). Customer churn prediction in
+  telecom using machine learning in big data platform. Journal of Big Data,
+  6(28). https://doi.org/10.1186/s40537-019-0191-6
+"""
 
 import os
 import joblib
