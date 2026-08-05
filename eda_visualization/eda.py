@@ -19,11 +19,29 @@ os.makedirs(CHARTS_DIR, exist_ok=True)
 sns.set_theme(style="whitegrid", palette="muted")
 plt.rcParams.update({"font.size": 11, "figure.titlesize": 14})
 
-# 1. Load Data & Clean TotalCharges for Visualisation
+# 1. Load Data
 df = pd.read_csv(DATA_PATH)
-df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce").fillna(
-    0
-)
+
+print("--- DATASET INFO ---")
+df.info()
+
+# Convert TotalCharges to numeric BEFORE the missing-value check, so blank-string
+# entries (11 customers with tenure=0, not yet billed) are counted as NaN and show
+# up correctly below instead of being silently missed.
+df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
+
+print("\n--- MISSING VALUES ---")
+print(df.isnull().sum())
+
+print("\n--- DUPLICATE ROWS ---")
+print(f"Total duplicate rows: {df.duplicated().sum()}")
+
+print("\n--- DESCRIPTIVE STATISTICS ---")
+print(df[["tenure", "MonthlyCharges", "TotalCharges"]].describe())
+
+# Now fill the (documented) TotalCharges blanks with 0 for charting purposes —
+# these are tenure=0 customers who haven't been billed yet, not "unknown" values.
+df["TotalCharges"] = df["TotalCharges"].fillna(0)
 
 # Translate target variable for clear labels
 df["Churn_Label"] = df["Churn"].map({"Yes": "Churned", "No": "Retained"})
@@ -61,6 +79,11 @@ plt.savefig(
 )
 plt.close()
 
+print("\n[Chart 1 Interpretation] Churned customers make up a minority of the "
+      f"base ({churn_counts.get('Churned', 0) / total * 100:.1f}%), confirming a "
+      "class imbalance that Task 2's preprocessing needs to account for (e.g. "
+      "class weighting) so models don't just learn to predict 'no churn' every time.")
+
 
 
 # CHART 2: Distribution of Tenure and Monthly Charges
@@ -97,6 +120,13 @@ plt.savefig(
 )
 plt.close()
 
+print("\n[Chart 2 Interpretation] Tenure is not normally distributed — there's a "
+      "large spike of very new customers (0-5 months) alongside a second cluster "
+      "near 70+ months, suggesting two distinct customer types: recent sign-ups "
+      "and long-term loyal customers. Monthly charges are spread fairly evenly "
+      "across price tiers, with a visible cluster around $20 (likely customers "
+      "with no add-on internet/streaming services).")
+
 
 
 # CHART 3: Monthly Charges Boxplot (Churn vs Retained)
@@ -106,7 +136,9 @@ sns.boxplot(
     data=df,
     x="Churn_Label",
     y="MonthlyCharges",
+    hue="Churn_Label",
     palette=["#2b5c8f", "#d95f02"],
+    legend=False,
     ax=ax,
     width=0.4,
 )
@@ -138,6 +170,12 @@ plt.savefig(
 )
 plt.close()
 
+print(f"\n[Chart 3 Interpretation] Churned customers have a higher median monthly "
+      f"charge (${medians.get('Churned', 0):.2f}) than retained customers "
+      f"(${medians.get('Retained', 0):.2f}), suggesting price sensitivity — "
+      "customers paying more per month may feel they're not getting enough value "
+      "and are more likely to leave.")
+
 
 
 # CHART 4: Categorical Churn Rates (Contract, Payment, Internet)
@@ -157,7 +195,9 @@ for idx, col in enumerate(cat_cols):
         data=churn_pct,
         x=col,
         y="Churn",
+        hue=col,
         palette="Oranges_r",
+        legend=False,
         ax=axes[idx],
     )
     axes[idx].set_title(f"Churn Rate by {titles[idx]}", fontweight="bold")
@@ -184,6 +224,13 @@ plt.savefig(
     bbox_inches="tight",
 )
 plt.close()
+
+print("\n[Chart 4 Interpretation] Month-to-month contracts, electronic check "
+      "payments, and fiber optic internet all show noticeably higher churn rates "
+      "than their alternatives (one/two-year contracts, automatic payment methods, "
+      "DSL/no internet). This points to a lack of long-term commitment and possibly "
+      "service/reliability dissatisfaction with fiber optic as key churn drivers — "
+      "worth targeting with retention offers (e.g. contract upgrade incentives).")
 
 
 
@@ -219,6 +266,13 @@ plt.savefig(
 )
 plt.close()
 
+print(f"\n[Chart 5 Interpretation] Tenure and TotalCharges are strongly positively "
+      f"correlated (r={corr.loc['TotalCharges', 'tenure']:.2f}), which makes sense "
+      "since longer-tenured customers accumulate more total billing — this is a "
+      "multicollinearity risk worth flagging for Task 2/3's modelling. Churn shows "
+      f"a moderate negative correlation with tenure (r={corr.loc['Churn', 'tenure']:.2f}), "
+      "reinforcing that newer customers are more likely to leave.")
+
 
 
 # CHART 6: ADDITIONAL PATTERN — Churn Rate by Tenure Group
@@ -238,7 +292,9 @@ sns.barplot(
     data=tenure_churn,
     x="TenureGroup",
     y="Churn",
+    hue="TenureGroup",
     palette="Reds_r",
+    legend=False,
     ax=ax,
     width=0.5,
 )
@@ -269,4 +325,10 @@ plt.savefig(
 )
 plt.close()
 
-print("EDA visualisations successfully generated and saved to outputs/charts/")
+print("\n[Chart 6 Interpretation] Churn rate is highest among customers in their "
+      "first year (0-1 Year group) and drops sharply as tenure increases, "
+      "flattening out for customers who have stayed 4+ years. This suggests "
+      "retention efforts should focus on the first 12 months, since customers "
+      "who make it past that window are far less likely to leave.")
+
+print("\nEDA visualisations successfully generated and saved to outputs/charts/")
