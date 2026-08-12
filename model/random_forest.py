@@ -6,16 +6,21 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 import joblib
 
-X_train = pd.read_csv('outputs/clean_X_train.csv')
-X_test = pd.read_csv('outputs/clean_X_test.csv')
-y_train = pd.read_csv('outputs/clean_y_train.csv').values.ravel()
-y_test = pd.read_csv('outputs/clean_y_test.csv').values.ravel()
+# Resolve project directories dynamically, so this works no matter where it's run from
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUTPUTS_DIR = os.path.join(BASE_DIR, "outputs")
+CHARTS_DIR = os.path.join(OUTPUTS_DIR, "charts")
+
+X_train = pd.read_csv(os.path.join(OUTPUTS_DIR, "clean_X_train.csv"))
+X_test = pd.read_csv(os.path.join(OUTPUTS_DIR, "clean_X_test.csv"))
+y_train = pd.read_csv(os.path.join(OUTPUTS_DIR, "clean_y_train.csv")).values.ravel()
+y_test = pd.read_csv(os.path.join(OUTPUTS_DIR, "clean_y_test.csv")).values.ravel()
 
 print("Training Random Forest Model...")
 model = RandomForestClassifier(n_estimators=100, class_weight='balanced', random_state=42) #100 trees
 model.fit(X_train, y_train)
-joblib.dump(model, 'outputs/random_forest_model.pkl')
-print("\nModel saved to outputs/random_forest_model.pkl")
+joblib.dump(model, os.path.join(OUTPUTS_DIR, "random_forest_model.pkl"))
+print(f"\nModel saved to {os.path.join(OUTPUTS_DIR, 'random_forest_model.pkl')}")
 
 y_pred = model.predict(X_test)
 y_prob = model.predict_proba(X_test)[:, 1] #this gives 2 columns = column 0 (no churn) and column 1 (churn) so so we take column 1 
@@ -40,7 +45,7 @@ plt.ylabel('Actual Label')
 plt.xlabel('Predicted Label')
 plt.tight_layout()
 
-os.makedirs('outputs/charts', exist_ok=True) #if edy there then dont complain
-plt.savefig('outputs/charts/random_forest_cm.png')
+os.makedirs(CHARTS_DIR, exist_ok=True) #if edy there then dont complain
+plt.savefig(os.path.join(CHARTS_DIR, "random_forest_cm.png"))
 plt.close() #closing the chart itself out of the memory so it doesn't consume resources(??)
-print("\nConfusion matrix chart saved successfully in 'outputs/charts/'!")
+print(f"\nConfusion matrix chart saved successfully in '{CHARTS_DIR}'!")
