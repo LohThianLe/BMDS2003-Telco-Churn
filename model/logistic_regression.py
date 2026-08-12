@@ -10,6 +10,11 @@ valuable for explaining churn drivers to business stakeholders, and it trains
 quickly even with the one-hot-encoded categorical features produced by
 preprocessing.py.
 
+Reference:
+James, G., Witten, D., Hastie, T., & Tibshirani, R. (2013). An Introduction
+to Statistical Learning: with Applications in R (Chapter 4: Classification).
+Springer.
+
 """
 
 import os
