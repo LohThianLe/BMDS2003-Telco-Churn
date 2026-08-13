@@ -7,6 +7,7 @@ from sklearn.model_selection import GridSearchCV
 import joblib
 from sklearn.metrics import classification_report
 from sklearn.metrics import roc_curve
+from sklearn.metrics import precision_recall_curve, average_precision_score
 import os
 import json
 
@@ -39,6 +40,24 @@ print("Best parameters:", grid_search.best_params_)
 
 with open("outputs/xgboost_best_params.json", "w") as f:
     json.dump(grid_search.best_params_, f, indent=2)
+
+# Plot Hyperparameter Tuning Heatmap (mean F1 score by max_depth and learning_rate, averaged across n_estimators)
+cv_results = pd.DataFrame(grid_search.cv_results_)
+heatmap_data = cv_results.pivot_table(
+    values='mean_test_score',
+    index='param_max_depth',
+    columns='param_learning_rate',
+    aggfunc='mean'
+)
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(heatmap_data, annot=True, fmt='.3f', cmap='viridis')
+plt.xlabel('Learning Rate')
+plt.ylabel('Max Depth')
+plt.title('XGBoost Hyperparameter Tuning: Mean F1 Score\n(averaged across n_estimators)')
+plt.tight_layout()
+plt.savefig('outputs/charts/xgboost_hyperparameter_heatmap.png', dpi=300)
+plt.show()
 
 model = grid_search.best_estimator_
 
@@ -85,11 +104,53 @@ plt.legend()
 plt.savefig('outputs/charts/xgboost_roc_curve.png')
 plt.show()
 
+# Plot Precision-Recall Curve
+precision_vals, recall_vals, _ = precision_recall_curve(y_test, y_pred_proba)
+avg_precision = average_precision_score(y_test, y_pred_proba)
+
+plt.figure(figsize=(6, 5))
+plt.plot(recall_vals, precision_vals, label=f"XGBoost (AP = {avg_precision:.3f})")
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('XGBoost Precision-Recall Curve')
+plt.legend()
+plt.savefig('outputs/charts/xgboost_precision_recall_curve.png', dpi=300)
+plt.show()
+
 plt.figure(figsize=(8, 6))
 xgb.plot_importance(model, max_num_features=10,importance_type='gain')
 plt.title('XGBoost Feature Importance')
 plt.tight_layout()
 plt.savefig('outputs/charts/xgboost_feature_importance.png')
+plt.show()
+
+# Plot Learning Curve (train vs test logloss across boosting rounds)
+learning_curve_model = xgb.XGBClassifier(
+    **grid_search.best_params_,
+    random_state=42,
+    scale_pos_weight=scale_pos_weight,
+    eval_metric='logloss'
+)
+learning_curve_model.fit(
+    X_train, y_train,
+    eval_set=[(X_train, y_train), (X_test, y_test)],
+    verbose=False
+)
+
+evals_result = learning_curve_model.evals_result()
+train_logloss = evals_result['validation_0']['logloss']
+test_logloss = evals_result['validation_1']['logloss']
+boosting_rounds = range(1, len(train_logloss) + 1)
+
+plt.figure(figsize=(8, 6))
+plt.plot(boosting_rounds, train_logloss, label='Train LogLoss')
+plt.plot(boosting_rounds, test_logloss, label='Test LogLoss')
+plt.xlabel('Boosting Round')
+plt.ylabel('Log Loss')
+plt.title('XGBoost Learning Curve (Train vs Test)')
+plt.legend()
+plt.tight_layout()
+plt.savefig('outputs/charts/xgboost_learning_curve.png', dpi=300)
 plt.show()
 
 joblib.dump(model, 'outputs/xgboost_model.pkl')

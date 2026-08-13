@@ -25,6 +25,23 @@ if not os.path.exists(model_path):
 
 model = joblib.load(model_path)
 
+# ---- Model performance charts (XGBoost only) ----
+if selected_model_name == "XGBoost":
+    with st.expander("XGBoost Model Performance", expanded=False):
+        xgboost_charts = [
+            ("Confusion Matrix", "xgboost_confusion_matrix.png"),
+            ("ROC Curve", "xgboost_roc_curve.png"),
+            ("Precision-Recall Curve", "xgboost_precision_recall_curve.png"),
+            ("Feature Importance", "xgboost_feature_importance.png"),
+            ("Learning Curve", "xgboost_learning_curve.png"),
+            ("Hyperparameter Tuning Heatmap", "xgboost_hyperparameter_heatmap.png"),
+        ]
+        chart_cols = st.columns(2)
+        for i, (caption, filename) in enumerate(xgboost_charts):
+            chart_path = os.path.join("outputs/charts", filename)
+            if os.path.exists(chart_path):
+                chart_cols[i % 2].image(chart_path, caption=caption, use_container_width=True)
+
 # ---- Input form ----
 st.header("Customer Details")
 
