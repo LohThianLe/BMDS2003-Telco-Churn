@@ -1,12 +1,29 @@
 import streamlit as st
 import pandas as pd
 import joblib
-
-# Load the trained Random Forest model
-model = joblib.load('outputs/random_forest_model.pkl')
+import os
 
 st.title("Telco Customer Churn Predictor")
 st.write("Enter a customer's details to predict whether they are likely to churn.")
+
+# ---- Model selection ----
+# Note: Logistic Regression excluded for now — it needs scaled input,
+# but the scaler used in preprocessing.py was never saved to a file.
+model_options = {
+    "Random Forest": "outputs/random_forest_model.pkl",
+    "Decision Tree": "outputs/decision_tree_model.pkl",
+    "XGBoost": "outputs/xgboost_model.pkl",
+    "Logistic Regression": "outputs/logistic_regression_model.pkl",
+}
+
+selected_model_name = st.selectbox("Choose a model", list(model_options.keys()))
+model_path = model_options[selected_model_name]
+
+if not os.path.exists(model_path):
+    st.error(f"Model file not found: {model_path}. Make sure it's been trained and saved.")
+    st.stop()
+
+model = joblib.load(model_path)
 
 # ---- Input form ----
 st.header("Customer Details")
@@ -42,7 +59,6 @@ with col2:
 # ---- Predict button ----
 if st.button("Predict Churn"):
 
-    # Build a single-row DataFrame matching the exact training columns
     input_dict = {
         "gender": 1 if gender == "Male" else 0,
         "SeniorCitizen": 1 if senior == "Yes" else 0,
@@ -71,10 +87,16 @@ if st.button("Predict Churn"):
 
     input_df = pd.DataFrame([input_dict])
 
+    if selected_model_name == "Logistic Regression":
+        scaler = joblib.load("outputs/scaler.pkl")
+        numeric_cols = ["tenure", "MonthlyCharges", "TotalCharges"]
+        input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
+
     prediction = model.predict(input_df)[0]
     probability = model.predict_proba(input_df)[0][1]
 
     st.header("Result")
+    st.caption(f"Model used: {selected_model_name}")
     if prediction == 1:
         st.error(f"This customer is likely to CHURN. (Probability: {probability:.1%})")
     else:

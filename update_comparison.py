@@ -38,7 +38,7 @@ dt_metrics = get_metrics(y_test, dt_pred, dt_prob)
 rf_metrics = get_metrics(y_test, rf_pred, rf_prob)
 xgb_metrics = get_metrics(y_test, xgb_pred, xgb_prob)
 
-comparison = pd.DataFrame({
+comparison = pd.DataFrame({ #data frame is table
     "Metric": ["Accuracy", "Precision", "Recall", "F1-Score", "ROC-AUC"],
     "Logistic Regression": lr_metrics,
     "Decision Tree": dt_metrics,
