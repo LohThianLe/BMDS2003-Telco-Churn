@@ -29,7 +29,10 @@ param_grid = {
     'max_depth': [3, 5, 7]
 }
 
-grid_search = GridSearchCV(xgb.XGBClassifier(random_state=42), param_grid, cv=3, scoring='f1')
+grid_search = GridSearchCV(
+    xgb.XGBClassifier(random_state=42, scale_pos_weight=scale_pos_weight),
+    param_grid, cv=3, scoring='f1'
+)
 grid_search.fit(X_train, y_train)
 
 print("Best parameters:", grid_search.best_params_)
