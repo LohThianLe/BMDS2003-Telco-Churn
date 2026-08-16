@@ -1,6 +1,6 @@
 Metric,Logistic Regression,Decision Tree,Random Forest,XGBoost
-Accuracy,81.16,72.98,77.66,80.41
-Precision,68.49,50.16,58.04,68.69
-Recall,56.79,82.4,64.11,51.22
-F1-Score,62.1,62.36,60.93,58.68
-ROC-AUC,85.89,83.21,83.68,85.73
+Accuracy,81.16,72.98,77.66,75.44
+Precision,68.49,50.16,58.04,53.16
+Recall,56.79,82.4,64.11,80.66
+F1-Score,62.1,62.36,60.93,64.08
+ROC-AUC,85.89,83.21,83.68,85.31
