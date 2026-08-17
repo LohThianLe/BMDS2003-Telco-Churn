@@ -10,6 +10,11 @@ valuable for explaining churn drivers to business stakeholders, and it trains
 quickly even with the one-hot-encoded categorical features produced by
 preprocessing.py.
 
+Reference:
+James, G., Witten, D., Hastie, T., & Tibshirani, R. (2013). An Introduction
+to Statistical Learning: with Applications in R (Chapter 4: Classification).
+Springer.
+
 """
 
 import os
@@ -73,6 +78,20 @@ disp.plot(cmap="Blues", ax=ax)
 plt.title("Logistic Regression Confusion Matrix")
 plt.tight_layout()
 plt.savefig(os.path.join(CHARTS_DIR, "logistic_regression_cm.png"), dpi=300)
+plt.close()
+
+# 5b. Plot and save ROC Curve
+from sklearn.metrics import roc_curve
+fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
+plt.figure(figsize=(6, 5))
+plt.plot(fpr, tpr, label=f"Logistic Regression (AUC = {roc_auc:.3f})")
+plt.plot([0, 1], [0, 1], linestyle='--', color='gray')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Logistic Regression ROC Curve')
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(CHARTS_DIR, "logistic_regression_roc_curve.png"), dpi=300)
 plt.close()
 
 # 6. Save trained model file for Task 3 / Streamlit integration

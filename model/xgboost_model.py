@@ -1,3 +1,21 @@
+"""
+task4_xgboost/xgboost_model.py - Task 4: XGBoost Model
+
+Why XGBoost was chosen:
+XGBoost was selected as the fourth model because gradient boosting builds
+trees sequentially, with each new tree correcting the errors of the previous
+ones, which typically gives stronger predictive performance than a single
+Decision Tree while still handling the mixed binary/one-hot encoded features
+from preprocessing.py natively (no scaling required). Built-in regularisation
+and scale_pos_weight support also make it well suited to this dataset's
+class imbalance (~73% No / ~27% Yes), which is explicitly handled below.
+
+Reference:
+Chen, T., & Guestrin, C. (2016). XGBoost: A Scalable Tree Boosting System.
+In Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge
+Discovery and Data Mining (pp. 785-794). ACM.
+"""
+
 import pandas as pd
 import xgboost as xgb
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
