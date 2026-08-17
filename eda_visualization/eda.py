@@ -131,6 +131,13 @@ print("\n[Chart 2 Interpretation] Tenure is not normally distributed — there's
 
 # CHART 3: Monthly Charges Boxplot (Churn vs Retained)
 
+# Explicit category order, used for BOTH the boxplot and the median labels below,
+# so the two can never drift out of sync with each other (this is what caused the
+# bug: sns.boxplot() previously defaulted to first-appearance order, while
+# groupby() defaults to alphabetical order -- two different orderings that
+# happened to look plausible but put each label on the wrong box).
+order = ["Retained", "Churned"]
+
 fig, ax = plt.subplots(figsize=(8, 5))
 sns.boxplot(
     data=df,
@@ -141,6 +148,7 @@ sns.boxplot(
     legend=False,
     ax=ax,
     width=0.4,
+    order=order,
 )
 ax.set_title(
     "Monthly Charges Comparison: Retained vs Churned Customers",
@@ -149,9 +157,11 @@ ax.set_title(
 ax.set_xlabel("Customer Status")
 ax.set_ylabel("Monthly Charges ($)")
 
-# Overlay median annotations
+# Overlay median annotations -- looked up by label (.loc), not by position,
+# so each annotation is guaranteed to land on the box it actually describes.
 medians = df.groupby("Churn_Label")["MonthlyCharges"].median()
-for i, median in enumerate(medians):
+for i, label in enumerate(order):
+    median = medians.loc[label]
     ax.text(
         i,
         median + 1.5,

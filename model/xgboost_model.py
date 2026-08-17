@@ -11,11 +11,17 @@ import os
 import json
 
 
+# Resolve project directories dynamically, so this works no matter where it's run from
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUTPUTS_DIR = os.path.join(BASE_DIR, "outputs")
+CHARTS_DIR = os.path.join(OUTPUTS_DIR, "charts")
+os.makedirs(CHARTS_DIR, exist_ok=True)
+
 # load the data
-X_train = pd.read_csv('outputs/clean_X_train.csv')
-X_test = pd.read_csv('outputs/clean_X_test.csv')
-y_train = pd.read_csv('outputs/clean_y_train.csv').values.ravel()
-y_test = pd.read_csv('outputs/clean_y_test.csv').values.ravel()
+X_train = pd.read_csv(os.path.join(OUTPUTS_DIR, "clean_X_train.csv"))
+X_test = pd.read_csv(os.path.join(OUTPUTS_DIR, "clean_X_test.csv"))
+y_train = pd.read_csv(os.path.join(OUTPUTS_DIR, "clean_y_train.csv")).values.ravel()
+y_test = pd.read_csv(os.path.join(OUTPUTS_DIR, "clean_y_test.csv")).values.ravel()
 
 neg = (y_train == 0).sum()
 pos = (y_train == 1).sum()
@@ -37,7 +43,7 @@ grid_search.fit(X_train, y_train)
 
 print("Best parameters:", grid_search.best_params_)
 
-with open("outputs/xgboost_best_params.json", "w") as f:
+with open(os.path.join(OUTPUTS_DIR, "xgboost_best_params.json"), "w") as f:
     json.dump(grid_search.best_params_, f, indent=2)
 
 model = grid_search.best_estimator_
@@ -71,8 +77,8 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['No Churn', 'Chu
 plt.xlabel('Predicted')
 plt.ylabel('Actual')
 plt.title('XGBoost Confusion Matrix')
-plt.savefig('outputs/charts/xgboost_confusion_matrix.png')
-plt.show()
+plt.savefig(os.path.join(CHARTS_DIR, "xgboost_confusion_matrix.png"))
+plt.close()
 
 fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
 plt.figure(figsize=(6, 5))
@@ -82,18 +88,19 @@ plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('XGBoost ROC Curve')
 plt.legend()
-plt.savefig('outputs/charts/xgboost_roc_curve.png')
-plt.show()
+plt.savefig(os.path.join(CHARTS_DIR, "xgboost_roc_curve.png"))
+plt.close()
 
 plt.figure(figsize=(8, 6))
 xgb.plot_importance(model, max_num_features=10,importance_type='gain')
 plt.title('XGBoost Feature Importance')
 plt.tight_layout()
-plt.savefig('outputs/charts/xgboost_feature_importance.png')
-plt.show()
+plt.savefig(os.path.join(CHARTS_DIR, "xgboost_feature_importance.png"))
+plt.close()
 
-joblib.dump(model, 'outputs/xgboost_model.pkl')
-print("Model saved to outputs/xgboost_model.pkl")
+xgb_model_path = os.path.join(OUTPUTS_DIR, "xgboost_model.pkl")
+joblib.dump(model, xgb_model_path)
+print(f"Model saved to {xgb_model_path}")
 
 results_row = pd.DataFrame([{
     "model": "XGBoost",
@@ -104,7 +111,7 @@ results_row = pd.DataFrame([{
     "roc_auc": roc_auc
 }])
 
-results_path = "outputs/model_results.csv"
+results_path = os.path.join(OUTPUTS_DIR, "model_results.csv")
 if os.path.exists(results_path):
     existing = pd.read_csv(results_path)
     existing = existing[existing["model"] != "XGBoost"]
