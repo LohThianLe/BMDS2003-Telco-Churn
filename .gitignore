@@ -1,0 +1,18 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# NOTE: .streamlit/ is intentionally NOT ignored -- it carries the app's theme
+# config and should stay tracked so the whole team gets the same look.

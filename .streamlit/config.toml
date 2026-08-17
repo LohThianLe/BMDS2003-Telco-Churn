@@ -1,0 +1,4 @@
+[theme]
+base = "dark"
+primaryColor = "#d95f02"
+buttonRadius = "20px"

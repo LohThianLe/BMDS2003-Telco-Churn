@@ -141,7 +141,13 @@ if os.path.exists(lr_model_path):
     comparison["Decision Tree"] = (comparison["Decision Tree"] * 100).round(2)
     print(comparison.to_string(index=False))
 
-    comparison.to_csv(os.path.join(OUTPUTS_DIR, "model_comparison.csv"), index=False)
-    print(f"\nComparison table saved to {os.path.join(OUTPUTS_DIR, 'model_comparison.csv')}")
+    # NOTE: this writes its own file, NOT outputs/model_comparison.csv.
+    # update_comparison.py is the sole owner of model_comparison.csv (it builds the
+    # full 4-model table from all saved .pkl files). Writing there from here would
+    # silently truncate that table to 2 columns whenever this script runs last,
+    # which makes app.py drop the Random Forest and XGBoost metrics.
+    dt_comparison_path = os.path.join(OUTPUTS_DIR, "dt_vs_lr_comparison.csv")
+    comparison.to_csv(dt_comparison_path, index=False)
+    print(f"\nComparison table saved to {dt_comparison_path}")
 else:
     print(f"Logistic Regression model not found at {lr_model_path} - skipping comparison.")

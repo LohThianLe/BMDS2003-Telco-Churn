@@ -14,6 +14,7 @@ Steps:
 """
 
 import pandas as pd
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -73,6 +74,7 @@ X_test_scaled = X_test.copy()
 scaler = StandardScaler()
 X_train_scaled[numeric_cols] = scaler.fit_transform(X_train[numeric_cols])
 X_test_scaled[numeric_cols] = scaler.transform(X_test[numeric_cols])
+joblib.dump(scaler, f"{OUTPUT_DIR}/scaler.pkl")
 
 # ---------- 10. Save outputs ----------
 X_train.to_csv(f"{OUTPUT_DIR}/clean_X_train.csv", index=False)
